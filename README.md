@@ -1,4 +1,4 @@
-# TAK Server 'X-Forwarded-For' Logging enablement
+# TAK Server 'X-Forwarded-For' Logging Enablement
 
 **This process was created for organizations that download pre-built RPMs from tak.gov and do not maintain their own TAK build server.** 
 
