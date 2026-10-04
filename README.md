@@ -4,7 +4,7 @@
 
 TAK Server's https://github.com/TAK-Product-Center/Server default HTTP access log records only the address of the upstream device that connects to it as the 'remoteip' entity. When the TAK server sits behind any load balancer or reverse web proxy, such as a BIG-IP, every tomcat HTTP log entry shows only the proxy's address, even though the proxy might be sending the X-Forwarded-For header to TAK. The tomcat log format is unfortunately fixed in compiled Java code and cannot be manipulated through TAK's `CoreConfig.xml` or startup script options. This process modifies the single java class that defines the embedded Tomcat log format enabling every entry to also record the X-Forwarded-For value. This permits every request to be traced to its originating client within TAK's syslog. This process does not require a full grable rebuild of takserver.war.
 
-This process has been validated against TAK Server [5.5-RELEASE-82](https://github.com/TAK-Product-Center/Server/releases/tag/5.5-RELEASE-82) and should work for subsequent releases, provided that the TAK developers do not change the Tomcat architecture.
+This process has been validated against TAK Server [5.5-RELEASE-82](https://github.com/TAK-Product-Center/Server/releases/tag/5.5-RELEASE-82) and should work for subsequent releases, provided that the TAK developers do not change the embedded Tomcat architecture.
 
 ## Non-Tak Rhel server tools preparation
 
