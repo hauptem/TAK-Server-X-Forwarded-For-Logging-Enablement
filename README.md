@@ -6,7 +6,7 @@ This process modifies the one class that defines the Tomcat log format so that e
 
 This process has been validated against TAK Server [5.5-RELEASE-82](https://github.com/TAK-Product-Center/Server/releases/tag/5.5-RELEASE-82) and should work for subsequent releases, provided that the TAK developers do not change the Tomcat architecture.
 
-## Tak build server or a non-Tak Rhel server tools preparation
+## Non-Tak Rhel server tools preparation
 
 1. Install the required packages
 
