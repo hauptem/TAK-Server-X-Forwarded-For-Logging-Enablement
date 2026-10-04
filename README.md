@@ -130,7 +130,7 @@ TAK Server's https://github.com/TAK-Product-Center/Server default HTTP access lo
 
 - This solution is **NOT** officially endorsed, supported, or maintained by TAK Product Center.
 - TAK Product Center retains all rights to their trademarks, including but not limited to "TAK", "Team Awareness Kit", and related marks
-- This is an independent, community-developed solution that utilizes TAK Product Center products but is not affiliated with TAK Product Center.
+- This is an independent, community-developed solution that utilizes TAK Server but is not affiliated with TAK Product Center.
 - For official TAK support and solutions, please contact TAK Product Center directly
 
 **Technical Disclaimer:**
