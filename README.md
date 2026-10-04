@@ -30,11 +30,11 @@ TAK Server's default HTTP access log records only the address of the upstream de
 
 6. Open Recaf by double-clicking the Recaf jar file
 
-   ![Recaf after opening](images/01-recaf-open.png)
+<img width="1350" height="944" alt="Image" src="https://github.com/user-attachments/assets/e0c0e041-b1d6-4bc2-a6cb-346a0475c244" />
 
 7. Drag and drop the unmodified `takserver.war` into the Recaf window and wait until war analysis is complete
 
-   ![takserver.war loaded in Recaf](images/02-war-loaded.png)
+<img width="1355" height="944" alt="Image" src="https://github.com/user-attachments/assets/3c44b5da-68ee-4e15-b9bc-b5ac18e8ee20" />
 
 8. In the left workspace window, navigate to **Classes > tak > server > CustomizeEmbeddedTomcatContainer**
 
@@ -52,13 +52,13 @@ TAK Server's default HTTP access log records only the address of the upstream de
 
 11. Do not make any other changes. Press Control-S to save the now modified class file.
 
-    ![CustomizeEmbeddedTomcatContainer open in Recaf](images/03-class-open.png)
+<img width="1353" height="944" alt="Image" src="https://github.com/user-attachments/assets/451b5a8c-eaa8-4fc8-94ec-a681c6c4d2d9" />
 
-    ![setPattern line with the xff field added](images/04-pattern-modified.png)
+<img width="1353" height="944" alt="Image" src="https://github.com/user-attachments/assets/451b5a8c-eaa8-4fc8-94ec-a681c6c4d2d9" />
 
 12. **Do not export the entire war using Recaf**, this repackages the war in a layout the TAK Server cannot load. Right click on 'CustomizeEmbeddedTomcatContainer' and select "Export class". Recaf will ask you where to save the 'CustomizeEmbeddedTomcatContainer.class' file. Ensure you **do not edit** this file in notepad or other text editor or you will cause bytecode corruption of the class file.
 
-    ![Export class in the Recaf context menu](images/05-export-class.png)
+<img width="1356" height="947" alt="Image" src="https://github.com/user-attachments/assets/7ed621ea-00da-40bd-86a4-e3c56d38cd4d" />
 
 13. Copy `takserver.war` and the modified class file to the Tak build server or a non-Tak Rhel server, into the same directory
 
