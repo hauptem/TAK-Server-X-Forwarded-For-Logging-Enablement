@@ -133,15 +133,15 @@ This process has been validated against TAK Server [5.5-RELEASE-82](https://gith
 ## Disclaimer
 
 - This solution is **NOT** officially endorsed, supported, or maintained by TAK Product Center.
-- TAK Product Center retains all rights to their trademarks, including but not limited to "TAK", "Team Awareness Kit", and related marks
+- TAK Product Center retains all rights to their trademarks, including but not limited to "TAK", "Team Awareness Kit", and related marks.
 - This is an independent, community-developed solution that utilizes TAK Server but is not affiliated with TAK Product Center.
-- For official TAK support and solutions, please contact TAK Product Center directly
+- For official TAK support and solutions, please contact TAK Product Center directly.
 
 **Technical Disclaimer:**
-- This process is provided "AS IS" without warranty of any kind
-- The authors and contributors are not responsible for any damages or issues that may arise from its use
-- Always test thoroughly in non-production environments before deployment
-- Backup your TAK configuration before implementing any changes
-- Review and understand all code before deploying to production systems
+- This process is provided "AS IS" without warranty of any kind.
+- The authors and contributors are not responsible for any damages or issues that may arise from its use.
+- Always test thoroughly in non-production environments before deployment.
+- Backup your TAK configuration before implementing any changes.
+- Review and understand all code before deploying to production systems.
 
 By using this software, you acknowledge that you have read and understood these disclaimers and agree to use this solution at your own risk.
