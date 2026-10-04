@@ -60,7 +60,7 @@ This process has been validated against TAK Server [5.5-RELEASE-82](https://gith
 
 <img width="1351" height="946" alt="Image" src="https://github.com/user-attachments/assets/4f6e358e-5d32-4daf-bd37-1fd2d2a04f92" />
 
-12. **Do not export the entire war using Recaf**, this repackages the war in a layout the TAK Server cannot load. Right click on 'CustomizeEmbeddedTomcatContainer' and select "Export class". Recaf will ask you where to save the 'CustomizeEmbeddedTomcatContainer.class' file. Ensure you **do not edit** this file in notepad or other text editor or you will cause bytecode corruption of the class file.
+12. **Do not export the entire war using Recaf**, this repackages the war in a layout the TAK Server cannot load. Right click on 'CustomizeEmbeddedTomcatContainer' and select "Export class". Recaf will ask you where to save the 'CustomizeEmbeddedTomcatContainer.class' file. Ensure you **do not edit** this file in notepad or other text editor or you will cause bytecode corruption of the class file rendering it useless.
 
 <img width="1356" height="947" alt="Image" src="https://github.com/user-attachments/assets/7ed621ea-00da-40bd-86a4-e3c56d38cd4d" />
 
