@@ -54,7 +54,7 @@ TAK Server's default HTTP access log records only the address of the upstream de
 
 <img width="1353" height="944" alt="Image" src="https://github.com/user-attachments/assets/451b5a8c-eaa8-4fc8-94ec-a681c6c4d2d9" />
 
-<img width="1353" height="944" alt="Image" src="https://github.com/user-attachments/assets/451b5a8c-eaa8-4fc8-94ec-a681c6c4d2d9" />
+<img width="1351" height="946" alt="Image" src="https://github.com/user-attachments/assets/4f6e358e-5d32-4daf-bd37-1fd2d2a04f92" />
 
 12. **Do not export the entire war using Recaf**, this repackages the war in a layout the TAK Server cannot load. Right click on 'CustomizeEmbeddedTomcatContainer' and select "Export class". Recaf will ask you where to save the 'CustomizeEmbeddedTomcatContainer.class' file. Ensure you **do not edit** this file in notepad or other text editor or you will cause bytecode corruption of the class file.
 
