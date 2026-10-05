@@ -6,7 +6,7 @@ TAK Server's https://github.com/TAK-Product-Center/Server default HTTP access lo
 
 This process has been validated against TAK Server [5.5-RELEASE-82](https://github.com/TAK-Product-Center/Server/releases/tag/5.5-RELEASE-82) and should work for subsequent releases, provided that the TAK developers do not change the embedded Tomcat architecture.
 
-## Non-Tak Rhel server tools preparation
+## Non-TAK-prod Rhel server tools preparation (used for patching the java class into the war)
 
 1. Install the required packages
 
@@ -14,7 +14,7 @@ This process has been validated against TAK Server [5.5-RELEASE-82](https://gith
    dnf install -y java-21-openjdk-devel unzip binutils
    ```
 
-## Windows client tools preparation
+## Windows client tools preparation (used for modifying and exporting a java class from the war)
 
 2. Download Recaf, a Java bytecode analyzer and disassembler: https://github.com/Col-E/Recaf
 
