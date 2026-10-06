@@ -2,87 +2,137 @@
 
 **This process was created for organizations that use compiled RPMs from tak.gov and do not maintain a local TAK build server.** 
 
-TAK Server's https://github.com/TAK-Product-Center/Server default HTTP access log records only the address of the upstream device that connects to it as the 'remoteip' entity. When the TAK server sits behind any load balancer or reverse web proxy, such as a BIG-IP, every tomcat HTTP log entry shows only the proxy's address, even though the proxy might be sending the X-Forwarded-For header to TAK. The tomcat log format is unfortunately fixed in compiled Java code and cannot be manipulated through TAK's `CoreConfig.xml` or startup script options. This process modifies the single java class that defines the embedded Tomcat log format enabling every entry to also record the X-Forwarded-For value. This permits every request to be traced to its originating client within TAK's syslog. This process does not require a full grable rebuild of takserver.war.
+TAK Server's https://github.com/TAK-Product-Center/Server default HTTP access log records only the address of the upstream device that connects to it as the 'remoteip' entity. When the TAK server sits behind any load balancer or reverse web proxy, such as a BIG-IP, every tomcat HTTP log entry shows only the proxy's address, even though the proxy might be sending the X-Forwarded-For header to TAK. The tomcat log format is unfortunately fixed in compiled Java code and cannot be manipulated through TAK's `CoreConfig.xml` or startup script options. This process extracts the single java class that defines the embedded Tomcat log format from the war, modifies its log pattern with a short Python script, and places it back into the war, enabling every entry to also record the X-Forwarded-For value. This permits every request to be traced to its originating client within TAK's syslog. This process does not require a full gradle rebuild of takserver.war or any third-party tools, only `jar` and `python3` on a Rhel server.
 
 This process has been validated against TAK Server 5.5-RELEASE-82 and should work for subsequent releases, provided that the TAK developers do not change the embedded Tomcat architecture.
 
-## Non-TAK-prod Rhel server tools preparation (used for patching the java class into the war)
+## Non-TAK-prod Rhel server tools preparation (used for patching the war)
 
-1. Install the required packages
+1. Install the required packages on the Rhel server or equivalent
 
    ```sh
-   dnf install -y java-21-openjdk-devel unzip binutils
+   dnf install -y java-21-openjdk-devel python3 unzip binutils
    ```
 
-## Windows client tools preparation (used for modifying and exporting a java class from the war)
+2. Create a working directory
 
-2. Download Recaf, a Java bytecode analyzer and disassembler: https://github.com/Col-E/Recaf
+   ```sh
+   mkdir -p /var/tmp/takserver-xff
+   ```
 
-3. Download a Java Development Kit (required for Recaf): https://www.oracle.com/java/technologies/downloads/
+## Record and back up the original files
 
-## Back up the current unmodified war
+3. On the TAK server, save the md5 hashes of the original files
 
-4. Copy the default war to a backup version
+   ```sh
+   cd /opt/tak
+   md5sum takserver.war CoreConfig.xml > takserver-original.md5
+   cat takserver-original.md5
+   ```
+
+4. On the TAK server, back up the original files
 
    ```sh
    cp -a /opt/tak/takserver.war /opt/tak/takserver.war.backup
+   cp -a /opt/tak/CoreConfig.xml /opt/tak/CoreConfig.xml.backup
    ```
 
-## Process and modify the takserver.war and export a single modified class file
+5. On the TAK server, verify the backups against the saved hashes – Both lines must report `OK`
 
-5. Copy `takserver.war` to the Windows client machine via `scp`
-
-6. Open Recaf by double-clicking the Recaf jar file
-
-<img width="1350" height="944" alt="Image" src="https://github.com/user-attachments/assets/e0c0e041-b1d6-4bc2-a6cb-346a0475c244" />
-
-7. Drag and drop the unmodified `takserver.war` into the Recaf window and wait until war analysis is complete
-
-<img width="1355" height="944" alt="Image" src="https://github.com/user-attachments/assets/3c44b5da-68ee-4e15-b9bc-b5ac18e8ee20" />
-
-8. In the left workspace window, navigate to **Classes > tak > server > CustomizeEmbeddedTomcatContainer**
-
-9. CustomizeEmbeddedTomcatContainer is the class that instructs Tomcat on how to log HTTP connection information. In the right panel find the line:
-
-   ```java
-   accessLogValve.setPattern("request: method=%m uri=\"%U\" response: statuscode=%s bytes=%b duration=%D(ms) client: remoteip=%a user=%{username}s useragent=\"%{User-Agent}i\"");
+   ```sh
+   cd /opt/tak
+   sed 's/$/.backup/' takserver-original.md5 | md5sum -c -
    ```
 
-10. And modify it to include the incoming X-Forwarded-For header via: `xff=%{X-Forwarded-For}i`
+## Copy the war to the Rhel server
 
-    ```java
-    accessLogValve.setPattern("request: method=%m uri=\"%U\" response: statuscode=%s bytes=%b duration=%D(ms) client: remoteip=%a xff=%{X-Forwarded-For}i user=%{username}s useragent=\"%{User-Agent}i\"");
-    ```
+6. From the TAK server, copy the war and the hash file to the Tak build server or a non-Tak Rhel server
 
-11. Do not make any other changes. Press Control-S to save the now modified class file.
+   ```sh
+   cd /opt/tak
+   scp takserver.war takserver-original.md5 root@<rhel-server>:/var/tmp/takserver-xff/
+   ```
 
-<img width="1353" height="944" alt="Image" src="https://github.com/user-attachments/assets/451b5a8c-eaa8-4fc8-94ec-a681c6c4d2d9" />
+7. On the Tak build server or a non-Tak Rhel server, verify the copied war is the unmodified original – The line must report `OK`
 
-<img width="1351" height="946" alt="Image" src="https://github.com/user-attachments/assets/4f6e358e-5d32-4daf-bd37-1fd2d2a04f92" />
+   ```sh
+   cd /var/tmp/takserver-xff
+   grep 'takserver.war$' takserver-original.md5 | md5sum -c -
+   ```
 
-12. **Do not export the entire war using Recaf**, this repackages the war in a layout the TAK Server cannot load. Right click on 'CustomizeEmbeddedTomcatContainer' and select "Export class". Recaf will ask you where to save the 'CustomizeEmbeddedTomcatContainer.class' file. Ensure you **do not edit** this file in notepad or other text editor or you will cause bytecode corruption of the class file rendering it useless.
+## Patch the access log pattern in the war
 
-<img width="1356" height="947" alt="Image" src="https://github.com/user-attachments/assets/7ed621ea-00da-40bd-86a4-e3c56d38cd4d" />
+8. Extract the class file that defines the Tomcat log format from the war
 
-13. Copy `takserver.war` and the modified class file to the Tak build server or a non-Tak Rhel server, into the same directory
+   `jar` recreates the `WEB-INF/classes/tak/server` path on disk, which is the path it needs to place the class back into the war
 
-## Patch the modified class file into the war
+   ```sh
+   cd /var/tmp/takserver-xff
+   jar xf takserver.war WEB-INF/classes/tak/server/CustomizeEmbeddedTomcatContainer.class
+   ```
 
-14. Run these commands in the directory holding `takserver.war` and the modified class file
+9. Add the X-Forwarded-For field to the log pattern in the class file – **Run once only**
 
-    `jar` places a file in the war at the same relative path it has on disk, so the class **must** be moved into a temporary **`WEB-INF/classes/tak/server`** folder which builds the necessary internal pathing in the war during the patch
+   The class file is binary and **must not** be edited in vi or another text editor. The script inserts the field, corrects the stored length of the pattern string, and stops without writing if the stock pattern is not found exactly once
+
+   ```sh
+   python3 - <<'EOF'
+   import struct
+   p = 'WEB-INF/classes/tak/server/CustomizeEmbeddedTomcatContainer.class'
+   d = open(p, 'rb').read()
+   old = b'remoteip=%a user='
+   new = b'remoteip=%a xff=%{X-Forwarded-For}i user='
+   assert d.count(old) == 1
+   i = d.index(old)
+   s = d.rfind(b'request: method=', 0, i)
+   assert d[s-3] == 1
+   n = struct.unpack('>H', d[s-2:s])[0]
+   d = d[:s-2] + struct.pack('>H', n + len(new) - len(old)) + d[s:i] + new + d[i+len(old):]
+   open(p, 'wb').write(d)
+   EOF
+   ```
+
+10. Place the modified class file back into the war and remove the extracted copy
 
     ```sh
-    mkdir -p WEB-INF/classes/tak/server
-    mv CustomizeEmbeddedTomcatContainer.class WEB-INF/classes/tak/server/
     jar uf takserver.war WEB-INF/classes/tak/server/CustomizeEmbeddedTomcatContainer.class
     rm -rf WEB-INF
     ```
 
-15. Verify the patch – The output must be `1` before proceeding further
+11. Verify the patch – The output must be `1` before proceeding further
 
     ```sh
     unzip -p takserver.war WEB-INF/classes/tak/server/CustomizeEmbeddedTomcatContainer.class | strings | grep -c 'xff='
+    ```
+
+12. Save the md5 hash of the patched war
+
+    ```sh
+    cd /var/tmp/takserver-xff
+    md5sum takserver.war > takserver-xff.md5
+    cat takserver-xff.md5
+    ```
+
+## Transfer the patched war to the TAK server
+
+13. On the TAK server, create a staging directory
+
+    ```sh
+    mkdir -p /var/tmp/takserver-xff
+    ```
+
+14. From the Tak build server or a non-Tak Rhel server, copy the patched war and its hash file to the TAK server
+
+    ```sh
+    cd /var/tmp/takserver-xff
+    scp takserver.war takserver-xff.md5 root@<tak-server>:/var/tmp/takserver-xff/
+    ```
+
+15. On the TAK server, verify the transfer – The line must report `OK`
+
+    ```sh
+    cd /var/tmp/takserver-xff
+    md5sum -c takserver-xff.md5
     ```
 
 ## Install the patched war
@@ -93,22 +143,55 @@ This process has been validated against TAK Server 5.5-RELEASE-82 and should wor
     systemctl stop takserver
     ```
 
-17. From the Tak build server or a non-Tak Rhel server, copy the patched `takserver.war` to the TAK server at `/opt/tak/takserver.war`
+17. Install the patched war and set ownership
 
     ```sh
-    scp takserver.war root@<tak-server>:/opt/tak/takserver.war
+    cp /var/tmp/takserver-xff/takserver.war /opt/tak/takserver.war
+    chown tak:tak /opt/tak/takserver.war
     ```
 
-18. On the TAK server, set ownership and start the service
+18. Verify the installed war – The line must report `OK`
 
     ```sh
-    chown tak:tak /opt/tak/takserver.war
+    cd /opt/tak
+    md5sum -c /var/tmp/takserver-xff/takserver-xff.md5
+    ```
+
+19. Check whether the HTTP access log is enabled
+
+    ```sh
+    grep -n '<logging' /opt/tak/CoreConfig.xml
+    ```
+
+20. If the previous step printed nothing, add the logging element
+
+    If it printed a `logging` line without `httpAccessEnabled="true"`, add that attribute to the existing line by hand and skip this command
+
+    ```sh
+    sed -i 's#</Configuration>#    <logging httpAccessEnabled="true"/>\n</Configuration>#' /opt/tak/CoreConfig.xml
+    ```
+
+21. Start the service
+
+    ```sh
     systemctl start takserver
     ```
 
 ## Logging Verification
 
-19. Review the access log
+22. Confirm the API process reports the access log as enabled
+
+    ```sh
+    grep 'http access logging' /opt/tak/logs/takserver-api.log | tail -1
+    ```
+
+    Expected output:
+
+    ```
+    ... http access logging enabled: true
+    ```
+
+23. Review the access log
 
     ```sh
     tail -f /opt/tak/logs/takserver-api-access.log
@@ -122,14 +205,22 @@ This process has been validated against TAK Server 5.5-RELEASE-82 and should wor
 
 ## Rollback
 
-20. Restore the backup and restart TAK Server
+24. On the TAK server, restore the original files and restart the service
 
     ```sh
     systemctl stop takserver
     cp -a /opt/tak/takserver.war.backup /opt/tak/takserver.war
+    cp -a /opt/tak/CoreConfig.xml.backup /opt/tak/CoreConfig.xml
     systemctl start takserver
     ```
-    
+
+25. Verify the restored files against the original hashes – Both lines must report `OK`
+
+    ```sh
+    cd /opt/tak
+    md5sum -c takserver-original.md5
+    ```
+
 ## Disclaimer
 
 - This solution is **NOT** officially endorsed, supported, or maintained by TAK Product Center.
